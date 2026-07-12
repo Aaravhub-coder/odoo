@@ -1,0 +1,1 @@
+Include all base templates, master templates and 404 template in this folder 
