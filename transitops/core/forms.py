@@ -1,5 +1,6 @@
 from django import forms
-from .models import Vehicle, Driver
+from .models import Vehicle, Driver,Trip
+from django.utils import timezone
 
 class VehicleForm(forms.ModelForm):
     class Meta:
@@ -66,3 +67,41 @@ class DriverForm(forms.ModelForm):
                 
             return license_no_upper
         return license_no
+    
+class TripForm(forms.ModelForm):
+    class Meta:
+        model = Trip
+        fields = ['source', 'destination', 'vehicle', 'driver', 'cargo_weight', 'distance', 'status']
+
+    def __init__(self, *source_args, **kwargs):
+        super().__init__(*source_args, **kwargs)
+        # Rule: Exclude Retired, In Shop, or On Trip vehicles from selection pool
+        self.fields['vehicle'].queryset = Vehicle.objects.filter(status='AVAILABLE')
+        
+        # Rule: Exclude expired-license, Suspended, or On Trip drivers
+        self.fields['driver'].queryset = Driver.objects.filter(
+            status='AVAILABLE',
+            expiry_date__gt=timezone.now().date()
+        )
+
+        # If we are editing an existing trip, allow keeping the currently assigned vehicle/driver
+        if self.instance and self.instance.pk:
+            self.fields['vehicle'].queryset = Vehicle.objects.filter(
+                models.Q(status='AVAILABLE') | models.Q(pk=self.instance.vehicle.pk)
+            )
+            self.fields['driver'].queryset = Driver.objects.filter(
+                models.Q(status='AVAILABLE') | models.Q(pk=self.instance.driver.pk)
+            )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        vehicle = cleaned_data.get('vehicle')
+        cargo_weight = cleaned_data.get('cargo_weight')
+
+        # Rule: Cargo Weight must not exceed vehicle's maximum capacity
+        if vehicle and cargo_weight:
+            if cargo_weight > vehicle.max_load:
+                raise forms.ValidationError(
+                    f"Overload Alert! Cargo weight ({cargo_weight}kg) exceeds vehicle maximum capacity ({vehicle.max_load}kg)."
+                )
+        return cleaned_data

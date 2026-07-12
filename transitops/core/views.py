@@ -1,9 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_400, redirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from .models import Vehicle, Driver
-from .forms import VehicleForm, DriverForm
+from .models import Vehicle, Driver, Trip
+from .forms import VehicleForm, DriverForm, TripForm
 
 # ==========================================
 # VEHICLE REGISTRY MANAGEMENT VIEWS
@@ -64,3 +64,39 @@ class DriverUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     success_url = reverse_lazy('core:driver_list')
     
     permission_required = 'core.change_driver'
+
+class TripListView(LoginRequiredMixin, ListView):
+    model = Trip
+    template_name = 'core/trip_list.html'
+    context_object_name = 'trips'
+
+class TripCreateView(LoginRequiredMixin, CreateView):
+    model = Trip
+    form_class = TripForm
+    template_name = 'core/trip_form.html'
+    success_url = reverse_lazy('core:trip_list')
+
+class TripStatusTransitionView(LoginRequiredMixin, django.views.View):
+    """Handles automation logic when changing trip states"""
+    def post(self, request, pk, action):
+        trip = get_object_or_404(Trip, pk=pk)
+        vehicle = trip.vehicle
+        driver = trip.driver
+
+        if action == 'dispatch' and trip.status == 'DRAFT':
+            trip.status = 'DISPATCHED'
+            vehicle.status = 'ON_TRIP'
+            driver.status = 'ON_TRIP'
+        elif action == 'complete' and trip.status == 'DISPATCHED':
+            trip.status = 'COMPLETED'
+            vehicle.status = 'AVAILABLE'
+            driver.status = 'AVAILABLE'
+        elif action == 'cancel' and trip.status == 'DISPATCHED':
+            trip.status = 'CANCELLED'
+            vehicle.status = 'AVAILABLE'
+            driver.status = 'AVAILABLE'
+        
+        trip.save()
+        vehicle.save()
+        driver.save()
+        return redirect('core:trip_list')
