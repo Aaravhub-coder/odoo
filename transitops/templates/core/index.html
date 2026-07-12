@@ -1,0 +1,316 @@
+<!-- ============================================================
+     HTML — Markup/Structure for TransitOps
+     Links to: styles.css (CSS) and script.js (JavaScript)
+     ============================================================ -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TransitOps Dashboard</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js Engine CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Namespaced Static Asset Locations -->
+    <link rel="stylesheet" href="{% static 'core_app/css/styles.css' %}">
+    <script src="{% static 'core_app/js/script.js' %}" defer></script>
+</head>
+<body>
+
+<!-- ============================================================ LOGIN ============================================================ -->
+<div id="login-screen">
+  <div class="login-hero">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 30 30" fill="none"><rect width="30" height="30" rx="7" fill="#14E0B4"/><path d="M7 19L13 12L18 16L23 9" stroke="#06251E" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="23" cy="9" r="2" fill="#06251E"/></svg>
+      <span class="brand-name">TransitOps</span>
+    </div>
+
+    <div class="hero-mid">
+      <h1 class="hero-title">Every vehicle, driver, and dispatch — <em>on one command line.</em></h1>
+      <p class="hero-sub">Replace spreadsheets and paper logbooks with a single operations layer for scheduling, maintenance, fuel, and compliance.</p>
+
+      <div class="route-svg-wrap">
+        <svg width="100%" height="90" viewBox="0 0 460 90" preserveAspectRatio="xMinYMid meet">
+          <path class="route-line" d="M10 70 C 90 70, 110 20, 190 20 S 300 78, 370 40 S 430 15, 450 15"/>
+          <circle class="route-dot" cx="10" cy="70" r="4.5"/>
+          <circle class="route-dot" cx="450" cy="15" r="4.5" opacity="0.35"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-panel">
+    <div class="login-form">
+      <h1>Sign in</h1>
+      <p class="lede">Access your operations workspace.</p>
+
+      <div class="field">
+        <label for="email">Work email</label>
+        <input type="email" id="email" placeholder="you@fleetco.com" value="alex.morgan@transitops.io">
+      </div>
+      <div class="field">
+        <label for="pass">Password</label>
+        <input type="password" id="pass" placeholder="••••••••••" value="••••••••••">
+      </div>
+
+      <div class="form-foot" style="margin-top:0;margin-bottom:24px;">
+        <label class="form-check"><input type="checkbox" checked style="accent-color:#14E0B4;"> Keep me signed in</label>
+        <a href="#">Forgot password?</a>
+      </div>
+
+      <button class="btn-primary" id="loginBtn">Sign in to TransitOps</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ APP ============================================================ -->
+<div id="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 30 30" fill="none"><rect width="30" height="30" rx="7" fill="#14E0B4"/><path d="M7 19L13 12L18 16L23 9" stroke="#06251E" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="23" cy="9" r="2" fill="#06251E"/></svg>
+      <span class="brand-name">TransitOps</span>
+    </div>
+
+    <div class="nav-section-label">Operations</div>
+    <div class="nav-item active" data-view="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</div>
+    <div class="nav-item" data-view="vehicles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13l1.5-5A2 2 0 016.4 6.5h11.2A2 2 0 0119.5 8l1.5 5"/><rect x="2" y="13" width="20" height="6" rx="1.5"/><circle cx="7" cy="19.5" r="1.6"/><circle cx="17" cy="19.5" r="1.6"/></svg>Vehicles</div>
+    <div class="nav-item" data-view="drivers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.4-4 4.2-6 7.5-6s6.1 2 7.5 6"/></svg>Drivers</div>
+    <div class="nav-item" data-view="trips"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19L10 5l4 9 3-6 3 11"/></svg>Trips</div>
+
+    <div class="nav-section-label">Assets</div>
+    <div class="nav-item" data-view="maintenance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a4 4 0 00-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 005.4-5.4l-2.6 2.6-2-2 2.6-2.6z"/></svg>Maintenance</div>
+    <div class="nav-item" data-view="fuel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h8v18H6z"/><path d="M14 8h2a2 2 0 012 2v6.5a1.5 1.5 0 003 0V9l-3-3"/></svg>Fuel & Expenses</div>
+    <div class="nav-item" data-view="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>Reports</div>
+
+    <div class="sidebar-foot">
+      <div class="avatar">AM</div>
+      <div class="who"><b>Alex Morgan</b><span id="roleLabel">Fleet Manager</span></div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <section class="view active" id="view-dashboard">
+      <div class="topbar">
+        <div><h2>Fleet Dashboard</h2><div class="sub">Live overview across all regions · updated 2 min ago</div></div>
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+          <input placeholder="Search vehicles, drivers, trip IDs…">
+        </div>
+      </div>
+
+      <div class="kpi-strip">
+        <div class="kpi-card accent"><div class="label">Active Vehicles</div><div class="val">86 <small>/ 128</small></div><div class="trend up">▲ 4.1% vs last wk</div></div>
+        <div class="kpi-card"><div class="label">Available</div><div class="val">31</div><div class="trend up">▲ 2 today</div></div>
+        <div class="kpi-card"><div class="label">In Maintenance</div><div class="val">11</div><div class="trend down">▼ 1 vs yesterday</div></div>
+        <div class="kpi-card"><div class="label">Active Trips</div><div class="val">42</div><div class="trend up">▲ 6 dispatched</div></div>
+        <div class="kpi-card"><div class="label">Pending Trips</div><div class="val">9</div><div class="trend down">▼ queue shrinking</div></div>
+        <div class="kpi-card"><div class="label">Drivers On Duty</div><div class="val">63</div><div class="trend up">▲ 91% roster</div></div>
+        <div class="kpi-card"><div class="label">Fleet Utilization</div><div class="val">94.2<small>%</small></div><div class="trend up">▲ 1.8 pts</div></div>
+      </div>
+
+      <div class="filter-bar">
+        <select><option>All vehicle types</option><option>Van</option><option>Truck</option><option>Refrigerated</option></select>
+        <select><option>All statuses</option><option>Available</option><option>On Trip</option><option>In Shop</option></select>
+        <select><option>All regions</option><option>North</option><option>South</option><option>East</option><option>West</option></select>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head"><h3>Fleet Utilization — 7 Day Trend</h3><span class="tag">% ACTIVE / TOTAL</span></div>
+          <canvas id="utilChart" height="150"></canvas>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Operational Cost Split</h3><span class="tag">THIS MONTH</span></div>
+          <canvas id="costChart" height="150"></canvas>
+          <div class="legend-row">
+            <div class="legend-item"><span class="legend-dot" style="background:#14E0B4"></span>Fuel · $18,420</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#4C8DFF"></span>Maintenance · $9,860</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#FFB238"></span>Tolls & Other · $2,140</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-main">
+        <div class="panel">
+          <div class="panel-head"><h3>Active Trips</h3><span class="tag">42 IN PROGRESS</span></div>
+          <table>
+            <thead><tr><th>Trip</th><th>Route</th><th>Vehicle</th><th>Driver</th><th>Cargo</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">TRP-1042</td><td>Calgary → Red Deer</td><td class="mono">VAN-05</td><td>Alex Chen</td><td>450 kg</td><td><span class="badge info">Dispatched</span></td></tr>
+              <tr><td class="mono">TRP-1041</td><td>Edmonton → Lloydminster</td><td class="mono">TRK-11</td><td>Priya Nair</td><td>2,300 kg</td><td><span class="badge info">Dispatched</span></td></tr>
+              <tr><td class="mono">TRP-1040</td><td>Meerut → Delhi</td><td class="mono">VAN-02</td><td>Rohan Gill</td><td>310 kg</td><td><span class="badge ok">Completed</span></td></tr>
+              <tr><td class="mono">TRP-1039</td><td>Surrey → Kelowna</td><td class="mono">TRK-07</td><td>Marcus Lee</td><td>1,850 kg</td><td><span class="badge warn">Draft</span></td></tr>
+              <tr><td class="mono">TRP-1038</td><td>Regina → Saskatoon</td><td class="mono">VAN-09</td><td>Sana Iqbal</td><td>620 kg</td><td><span class="badge danger">Cancelled</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>Alerts</h3><span class="tag">NEEDS ATTENTION</span></div>
+          <div class="alert-item">
+            <div class="alert-ico danger">!</div>
+            <div><div class="alert-title">License expiring — Priya Nair</div><div class="alert-meta">Category DZ · expires in 4 days</div></div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-ico warn">⚠</div>
+            <div><div class="alert-title">TRK-07 due for oil change</div><div class="alert-meta">Odometer 48,220 km · overdue 300 km</div></div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-ico danger">!</div>
+            <div><div class="alert-title">Sana Iqbal — safety score dropped</div><div class="alert-meta">78 → 64 this month</div></div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-ico warn">⚠</div>
+            <div><div class="alert-title">VAN-09 flagged after cancellation</div><div class="alert-meta">Review dispatch note</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VEHICLES -->
+    <section class="view" id="view-vehicles">
+      <div class="topbar"><div><h2>Vehicle Registry</h2><div class="sub">128 vehicles · master fleet list</div></div>
+        <button class="export-btn">+ Register Vehicle</button>
+      </div>
+      <div class="filter-bar">
+        <input placeholder="Search registration number…">
+        <select><option>All types</option><option>Van</option><option>Truck</option><option>Refrigerated</option></select>
+        <select><option>All statuses</option><option>Available</option><option>On Trip</option><option>In Shop</option><option>Retired</option></select>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Registration</th><th>Model</th><th>Type</th><th>Max Load</th><th>Odometer</th><th>Acquisition Cost</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">VAN-05</td><td><span class="veh-name">Ford Transit 350</span><div class="veh-sub">Cargo van</div></td><td>Van</td><td>500 kg</td><td class="mono">32,410 km</td><td class="mono">$41,200</td><td><span class="badge info">On Trip</span></td></tr>
+            <tr><td class="mono">TRK-11</td><td><span class="veh-name">Freightliner M2</span><div class="veh-sub">Box truck</div></td><td>Truck</td><td>4,500 kg</td><td class="mono">88,760 km</td><td class="mono">$96,500</td><td><span class="badge info">On Trip</span></td></tr>
+            <tr><td class="mono">VAN-02</td><td><span class="veh-name">RAM ProMaster</span><div class="veh-sub">Cargo van</div></td><td>Van</td><td>480 kg</td><td class="mono">19,220 km</td><td class="mono">$38,900</td><td><span class="badge ok">Available</span></td></tr>
+            <tr><td class="mono">TRK-07</td><td><span class="veh-name">Isuzu NPR</span><div class="veh-sub">Refrigerated</div></td><td>Refrigerated</td><td>3,200 kg</td><td class="mono">48,220 km</td><td class="mono">$78,300</td><td><span class="badge warn">In Shop</span></td></tr>
+            <tr><td class="mono">VAN-09</td><td><span class="veh-name">Mercedes Sprinter</span><div class="veh-sub">Cargo van</div></td><td>Van</td><td>520 kg</td><td class="mono">61,050 km</td><td class="mono">$44,700</td><td><span class="badge ok">Available</span></td></tr>
+            <tr><td class="mono">TRK-03</td><td><span class="veh-name">Volvo VNL</span><div class="veh-sub">Semi-tractor</div></td><td>Truck</td><td>9,000 kg</td><td class="mono">142,900 km</td><td class="mono">$118,000</td><td><span class="badge neutral">Retired</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- DRIVERS -->
+    <section class="view" id="view-drivers">
+      <div class="topbar"><div><h2>Driver Management</h2><div class="sub">63 on duty · 74 total roster</div></div>
+        <button class="export-btn">+ Add Driver</button>
+      </div>
+      <div class="filter-bar">
+        <input placeholder="Search by name or license number…">
+        <select><option>All statuses</option><option>Available</option><option>On Trip</option><option>Off Duty</option><option>Suspended</option></select>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Driver</th><th>License #</th><th>Category</th><th>Expiry</th><th>Safety Score</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Alex Chen</td><td class="mono">DL-88234</td><td>Class 5</td><td class="mono">2027-03-11</td><td><span class="progress-bar"><span class="progress-fill" style="width:91%;background:#14E0B4"></span></span>91</td><td><span class="badge info">On Trip</span></td></tr>
+            <tr><td>Priya Nair</td><td class="mono">DL-77120</td><td>Class DZ</td><td class="mono">2026-07-16</td><td><span class="progress-bar"><span class="progress-fill" style="width:84%;background:#14E0B4"></span></span>84</td><td><span class="badge info">On Trip</span></td></tr>
+            <tr><td>Rohan Gill</td><td class="mono">DL-65590</td><td>Class 5</td><td class="mono">2028-01-04</td><td><span class="progress-bar"><span class="progress-fill" style="width:96%;background:#14E0B4"></span></span>96</td><td><span class="badge ok">Available</span></td></tr>
+            <tr><td>Marcus Lee</td><td class="mono">DL-90341</td><td>Class DZ</td><td class="mono">2027-09-22</td><td><span class="progress-bar"><span class="progress-fill" style="width:88%;background:#14E0B4"></span></span>88</td><td><span class="badge neutral">Off Duty</span></td></tr>
+            <tr><td>Sana Iqbal</td><td class="mono">DL-51287</td><td>Class 5</td><td class="mono">2026-11-02</td><td><span class="progress-bar"><span class="progress-fill" style="width:64%;background:#FFB238"></span></span>64</td><td><span class="badge danger">Suspended</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TRIPS -->
+    <section class="view" id="view-trips">
+      <div class="topbar"><div><h2>Trip Management</h2><div class="sub">Draft → Dispatched → Completed → Cancelled</div></div>
+        <button class="export-btn">+ Create Trip</button>
+      </div>
+      <div class="filter-bar">
+        <select><option>All statuses</option><option>Draft</option><option>Dispatched</option><option>Completed</option><option>Cancelled</option></select>
+        <input placeholder="Search trip ID or route…">
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Trip</th><th>Source → Destination</th><th>Vehicle</th><th>Driver</th><th>Cargo / Capacity</th><th>Distance</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">TRP-1042</td><td>Calgary → Red Deer</td><td class="mono">VAN-05</td><td>Alex Chen</td><td>450 / 500 kg</td><td class="mono">148 km</td><td><span class="badge info">Dispatched</span></td></tr>
+            <tr><td class="mono">TRP-1041</td><td>Edmonton → Lloydminster</td><td class="mono">TRK-11</td><td>Priya Nair</td><td>2,300 / 4,500 kg</td><td class="mono">252 km</td><td><span class="badge info">Dispatched</span></td></tr>
+            <tr><td class="mono">TRP-1040</td><td>Meerut → Delhi</td><td class="mono">VAN-02</td><td>Rohan Gill</td><td>310 / 480 kg</td><td class="mono">72 km</td><td><span class="badge ok">Completed</span></td></tr>
+            <tr><td class="mono">TRP-1039</td><td>Surrey → Kelowna</td><td class="mono">TRK-07</td><td>Marcus Lee</td><td>1,850 / 3,200 kg</td><td class="mono">396 km</td><td><span class="badge warn">Draft</span></td></tr>
+            <tr><td class="mono">TRP-1038</td><td>Regina → Saskatoon</td><td class="mono">VAN-09</td><td>Sana Iqbal</td><td>620 / 520 kg</td><td class="mono">260 km</td><td><span class="badge danger">Cancelled</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- MAINTENANCE -->
+    <section class="view" id="view-maintenance">
+      <div class="topbar"><div><h2>Maintenance</h2><div class="sub">11 vehicles currently in shop</div></div>
+        <button class="export-btn">+ New Record</button>
+      </div>
+      <div class="card-grid">
+        <div class="maint-card"><div class="top"><h4>TRK-07 · Oil Change</h4><span class="badge warn">In Shop</span></div><div class="meta">Opened 2026-07-09 · Bay 3</div><div class="cost">$210.00</div></div>
+        <div class="maint-card"><div class="top"><h4>VAN-11 · Brake Pads</h4><span class="badge warn">In Shop</span></div><div class="meta">Opened 2026-07-10 · Bay 1</div><div class="cost">$480.00</div></div>
+        <div class="maint-card"><div class="top"><h4>TRK-03 · Full Inspection</h4><span class="badge neutral">Closed</span></div><div class="meta">Closed 2026-07-05 · Retired after</div><div class="cost">$1,120.00</div></div>
+        <div class="maint-card"><div class="top"><h4>VAN-06 · Tire Rotation</h4><span class="badge ok">Closed</span></div><div class="meta">Closed 2026-07-08 · Restored to Available</div><div class="cost">$140.00</div></div>
+        <div class="maint-card"><div class="top"><h4>TRK-09 · Transmission</h4><span class="badge warn">In Shop</span></div><div class="meta">Opened 2026-07-11 · Bay 2</div><div class="cost">$2,340.00</div></div>
+        <div class="maint-card"><div class="top"><h4>VAN-02 · Wiper Blades</h4><span class="badge ok">Closed</span></div><div class="meta">Closed 2026-07-04 · Routine</div><div class="cost">$35.00</div></div>
+      </div>
+    </section>
+
+    <!-- FUEL & EXPENSES -->
+    <section class="view" id="view-fuel">
+      <div class="topbar"><div><h2>Fuel & Expenses</h2><div class="sub">Total operational cost = Fuel + Maintenance</div></div>
+        <button class="export-btn">+ Log Fuel / Expense</button>
+      </div>
+      <div class="kpi-strip" style="grid-template-columns:repeat(4,1fr);">
+        <div class="kpi-card accent"><div class="label">Total Operational Cost</div><div class="val">$30,420</div><div class="trend up">▲ 3.2% MoM</div></div>
+        <div class="kpi-card"><div class="label">Fuel Spend</div><div class="val">$18,420</div><div class="trend up">▲ 210 fills</div></div>
+        <div class="kpi-card"><div class="label">Maintenance Spend</div><div class="val">$9,860</div><div class="trend down">▼ 4.1% MoM</div></div>
+        <div class="kpi-card"><div class="label">Tolls & Other</div><div class="val">$2,140</div><div class="trend up">▲ steady</div></div>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Date</th><th>Vehicle</th><th>Type</th><th>Liters</th><th>Cost</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">2026-07-11</td><td class="mono">VAN-05</td><td><span class="badge info">Fuel</span></td><td>48.2 L</td><td class="mono">$74.30</td><td>Highway 2 station</td></tr>
+            <tr><td class="mono">2026-07-11</td><td class="mono">TRK-11</td><td><span class="badge warn">Toll</span></td><td>—</td><td class="mono">$18.00</td><td>Yellowhead route</td></tr>
+            <tr><td class="mono">2026-07-10</td><td class="mono">TRK-07</td><td><span class="badge danger">Maintenance</span></td><td>—</td><td class="mono">$210.00</td><td>Oil change</td></tr>
+            <tr><td class="mono">2026-07-10</td><td class="mono">VAN-02</td><td><span class="badge info">Fuel</span></td><td>39.6 L</td><td class="mono">$61.10</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- REPORTS -->
+    <section class="view" id="view-reports">
+      <div class="topbar"><div><h2>Reports & Analytics</h2><div class="sub">Fleet-wide performance summary</div></div>
+        <button class="export-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>Export CSV</button>
+      </div>
+      <div class="kpi-strip" style="grid-template-columns:repeat(4,1fr);">
+        <div class="kpi-card"><div class="label">Fuel Efficiency</div><div class="val">9.4 <small>km/L</small></div></div>
+        <div class="kpi-card"><div class="label">Fleet Utilization</div><div class="val">94.2<small>%</small></div></div>
+        <div class="kpi-card"><div class="label">Operational Cost</div><div class="val">$30,420</div></div>
+        <div class="kpi-card accent"><div class="label">Fleet ROI</div><div class="val">18.6<small>%</small></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Vehicle ROI Breakdown</h3><span class="tag">(REVENUE − COST) / ACQUISITION</span></div>
+        <table>
+          <thead><tr><th>Vehicle</th><th>Revenue</th><th>Maintenance + Fuel</th><th>Acquisition Cost</th><th>ROI</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">VAN-05</td><td class="mono">$18,200</td><td class="mono">$4,100</td><td class="mono">$41,200</td><td><span class="badge ok">34.2%</span></td></tr>
+            <tr><td class="mono">TRK-11</td><td class="mono">$41,600</td><td class="mono">$11,300</td><td class="mono">$96,500</td><td><span class="badge ok">31.4%</span></td></tr>
+            <tr><td class="mono">TRK-07</td><td class="mono">$22,900</td><td class="mono">$9,860</td><td class="mono">$78,300</td><td><span class="badge warn">16.7%</span></td></tr>
+            <tr><td class="mono">VAN-09</td><td class="mono">$14,800</td><td class="mono">$5,220</td><td class="mono">$44,700</td><td><span class="badge warn">21.4%</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -2,8 +2,9 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from .models import Vehicle, Driver, Trip
+from .models import Vehicle, Driver, Trip, MaintenanceLog, FuelLog, Expense
 from .forms import VehicleForm, DriverForm, TripForm
+
 
 # ==========================================
 # VEHICLE REGISTRY MANAGEMENT VIEWS
@@ -100,3 +101,43 @@ class TripStatusTransitionView(LoginRequiredMixin, django.views.View):
         vehicle.save()
         driver.save()
         return redirect('core:trip_list')
+    
+
+class MaintenanceLogCreateView(LoginRequiredMixin, CreateView):
+    model = MaintenanceLog
+    fields = ['vehicle', 'description', 'cost', 'start_date', 'is_active']
+    template_name = 'core/maintenance_form.html'
+    success_url = reverse_lazy('core:vehicle_list')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        # Automation: Set vehicle status to In Shop when active log is created
+        if self.object.is_active:
+            self.object.vehicle.status = 'IN_SHOP'
+            self.object.vehicle.save()
+        return response
+
+class CloseMaintenanceView(LoginRequiredMixin, django.views.View):
+    def post(self, request, pk):
+        log = get_object_or_404(MaintenanceLog, pk=pk)
+        log.is_active = False
+        log.end_date = timezone.now().date()
+        log.save()
+        
+        # Automation: Restore vehicle status to Available unless Retired
+        if log.vehicle.status != 'RETIRED':
+            log.vehicle.status = 'AVAILABLE'
+            log.vehicle.save()
+        return redirect('core:vehicle_list')
+    
+class FuelLogCreateView(LoginRequiredMixin, CreateView):
+    model = FuelLog
+    fields = ['vehicle', 'liters', 'cost', 'date']
+    template_name = 'core/fuel_form.html'
+    success_url = reverse_lazy('core:vehicle_list')
+
+class ExpenseCreateView(LoginRequiredMixin, CreateView):
+    model = Expense
+    fields = ['vehicle', 'trip', 'expense_type', 'amount', 'date', 'remarks']
+    template_name = 'core/expense_form.html'
+    success_url = reverse_lazy('core:trip_list')
