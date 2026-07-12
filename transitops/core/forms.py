@@ -1,7 +1,7 @@
 from django import forms
 from .models import Vehicle, Driver,Trip
 from django.utils import timezone
-
+from . import models
 class VehicleForm(forms.ModelForm):
     class Meta:
         model = Vehicle

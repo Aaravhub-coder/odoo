@@ -4,7 +4,13 @@ from django.views.generic import ListView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from .models import Vehicle, Driver, Trip, MaintenanceLog, FuelLog, Expense
 from .forms import VehicleForm, DriverForm, TripForm
-
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from .models import Driver, Vehicle
+from .forms import DriverForm 
+from django.views import View
+from django.utils import timezone
 
 # ==========================================
 # VEHICLE REGISTRY MANAGEMENT VIEWS
@@ -77,7 +83,7 @@ class TripCreateView(LoginRequiredMixin, CreateView):
     template_name = 'core/trip_form.html'
     success_url = reverse_lazy('core:trip_list')
 
-class TripStatusTransitionView(LoginRequiredMixin, django.views.View):
+class TripStatusTransitionView(LoginRequiredMixin, View):
     """Handles automation logic when changing trip states"""
     def post(self, request, pk, action):
         trip = get_object_or_404(Trip, pk=pk)
@@ -117,7 +123,7 @@ class MaintenanceLogCreateView(LoginRequiredMixin, CreateView):
             self.object.vehicle.save()
         return response
 
-class CloseMaintenanceView(LoginRequiredMixin, django.views.View):
+class CloseMaintenanceView(LoginRequiredMixin, View):
     def post(self, request, pk):
         log = get_object_or_404(MaintenanceLog, pk=pk)
         log.is_active = False
@@ -141,3 +147,68 @@ class ExpenseCreateView(LoginRequiredMixin, CreateView):
     fields = ['vehicle', 'trip', 'expense_type', 'amount', 'date', 'remarks']
     template_name = 'core/expense_form.html'
     success_url = reverse_lazy('core:trip_list')
+
+# --- DRIVER VIEWS ---
+
+@login_required
+def driver_list_view(request):
+    drivers = Driver.objects.all()
+    
+    # Handle the search bar input from template
+    query = request.GET.get('q')
+    if query:
+        drivers = drivers.filter(Q(name__icontains=query) | Q(license_number__icontains=query))
+        
+    # Handle the dropdown filter from template
+    status_filter = request.GET.get('status')
+    if status_filter:
+        drivers = drivers.filter(status=status_filter)
+        
+    return render(request, 'core_app/driver_list.html', {
+        'drivers': drivers,
+        'active_page': 'drivers'
+    })
+
+@login_required
+def driver_create_view(request):
+    form = DriverForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('driver_list')
+    return render(request, 'core_app/driver_form.html', {'form': form})
+
+@login_required
+def driver_edit_view(request,pk):
+    driver = get_object_or_404(Driver, pk=pk)
+    form = DriverForm(request.POST or None, instance=driver)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('driver_list')
+    return render(request, 'core_app/driver_form.html', {'form': form, 'driver': driver})
+
+
+# --- VEHICLE VIEWS ---
+
+@login_required
+def vehicle_list_view(request):
+    vehicles = Vehicle.objects.all()
+    
+    # Filter by registration number text search
+    query = request.GET.get('q')
+    if query:
+        vehicles = vehicles.filter(registration_number__icontains=query)
+        
+    # Filter by type dropdown
+    type_filter = request.GET.get('type')
+    if type_filter:
+        vehicles = vehicles.filter(type=type_filter)
+        
+    # Filter by status dropdown
+    status_filter = request.GET.get('status')
+    if status_filter:
+        vehicles = vehicles.filter(status=status_filter)
+        
+    return render(request, 'core_app/vehicle_list.html', {
+        'vehicles': vehicles,
+        'active_page': 'vehicles'
+    })

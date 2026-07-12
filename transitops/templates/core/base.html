@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Dashboard{% endblock %} · TransitOps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<div id="app" class="visible">
+  <aside class="sidebar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 30 30" fill="none"><rect width="30" height="30" rx="7" fill="#14E0B4"/><path d="M7 19L13 12L18 16L23 9" stroke="#06251E" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="23" cy="9" r="2" fill="#06251E"/></svg>
+      <span class="brand-name">TransitOps</span>
+    </div>
+
+    <div class="nav-section-label">Operations</div>
+    <a href="{% url 'dashboard' %}" class="nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard
+    </a>
+    <a href="{% url 'vehicle_list' %}" class="nav-item {% if active_page == 'vehicles' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13l1.5-5A2 2 0 016.4 6.5h11.2A2 2 0 0119.5 8l1.5 5"/><rect x="2" y="13" width="20" height="6" rx="1.5"/><circle cx="7" cy="19.5" r="1.6"/><circle cx="17" cy="19.5" r="1.6"/></svg>Vehicles
+    </a>
+    <a href="{% url 'driver_list' %}" class="nav-item {% if active_page == 'drivers' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.4-4 4.2-6 7.5-6s6.1 2 7.5 6"/></svg>Drivers
+    </a>
+    <a href="{% url 'trip_list' %}" class="nav-item {% if active_page == 'trips' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19L10 5l4 9 3-6 3 11"/></svg>Trips
+    </a>
+
+    <div class="nav-section-label">Assets</div>
+    <a href="{% url 'maintenance_list' %}" class="nav-item {% if active_page == 'maintenance' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a4 4 0 00-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 005.4-5.4l-2.6 2.6-2-2 2.6-2.6z"/></svg>Maintenance
+    </a>
+    <a href="{% url 'fuel_list' %}" class="nav-item {% if active_page == 'fuel' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h8v18H6z"/><path d="M14 8h2a2 2 0 012 2v6.5a1.5 1.5 0 003 0V9l-3-3"/></svg>Fuel &amp; Expenses
+    </a>
+    <a href="{% url 'report_list' %}" class="nav-item {% if active_page == 'reports' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>Reports
+    </a>
+
+    <div class="sidebar-foot">
+      <div class="avatar">{{ request.user.get_short_name|default:request.user.username|slice:":2"|upper }}</div>
+      <div class="who">
+        <b>{{ request.user.get_full_name|default:request.user.username }}</b>
+        <span>{{ request.user.profile.role|default:"Staff" }}</span>
+      </div>
+      <a href="{% url 'logout' %}" class="icon-btn" style="margin-left:auto;" title="Sign out">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      </a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h2>{% block page_title %}Dashboard{% endblock %}</h2>
+        <div class="sub">{% block page_sub %}{% endblock %}</div>
+      </div>
+      {% block topbar_extra %}{% endblock %}
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="panel" style="margin-bottom:16px;border-color:{% if message.tags == 'error' %}var(--coral){% else %}var(--teal){% endif %};padding:12px 16px;font-size:13px;">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

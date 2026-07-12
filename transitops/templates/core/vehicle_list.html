@@ -1,0 +1,87 @@
+{% extends 'core/base.html' %}
+{% block title %}Vehicles{% endblock %}
+{% block page_title %}Vehicle Registry{% endblock %}
+{% block page_sub %}{{ vehicles|length }} vehicles · master fleet list{% endblock %}
+
+{% block topbar_extra %}
+<a href="{% url 'vehicle_create' %}" class="export-btn">+ Register Vehicle</a>
+{% endblock %}
+
+{% block content %}
+<form method="get" class="filter-bar">
+  <input type="text" name="q" placeholder="Search registration number…" value="{{ request.GET.q }}">
+  <select name="type" onchange="this.form.submit()">
+    <option value="">All types</option>
+    <option value="van" {% if request.GET.type == 'van' %}selected{% endif %}>Van</option>
+    <option value="truck" {% if request.GET.type == 'truck' %}selected{% endif %}>Truck</option>
+    <option value="refrigerated" {% if request.GET.type == 'refrigerated' %}selected{% endif %}>Refrigerated</option>
+  </select>
+  <select name="status" onchange="this.form.submit()">
+    <option value="">All statuses</option>
+    <option value="available" {% if request.GET.status == 'available' %}selected{% endif %}>Available</option>
+    <option value="on_trip" {% if request.GET.status == 'on_trip' %}selected{% endif %}>On Trip</option>
+    <option value="in_shop" {% if request.GET.status == 'in_shop' %}selected{% endif %}>In Shop</option>
+    <option value="retired" {% if request.GET.status == 'retired' %}selected{% endif %}>Retired</option>
+  </select>
+</form>
+
+<div class="panel">
+  <table>
+    <thead>
+      <tr>
+        <th>Registration</th>
+        <th>Model</th>
+        <th>Type</th>
+        <th>Max Load</th>
+        <th>Odometer</th>
+        <th>Acquisition Cost</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for vehicle in vehicles %}
+      <tr>
+        <td class="mono">{{ vehicle.registration_number }}</td>
+        <td>
+          <span class="veh-name">{{ vehicle.name }}</span>
+          <div class="veh-sub">{{ vehicle.get_type_display|default:vehicle.type }}</div>
+        </td>
+        <td>{{ vehicle.get_type_display|default:vehicle.type }}</td>
+        <td>{{ vehicle.max_load_capacity }} kg</td>
+        <td class="mono">{{ vehicle.odometer }} km</td>
+        <td class="mono">${{ vehicle.acquisition_cost }}</td>
+        <td>
+          {% if vehicle.status == 'available' %}
+            <span class="badge ok">Available</span>
+          {% elif vehicle.status == 'on_trip' %}
+            <span class="badge info">On Trip</span>
+          {% elif vehicle.status == 'in_shop' %}
+            <span class="badge warn">In Shop</span>
+          {% else %}
+            <span class="badge neutral">Retired</span>
+          {% endif %}
+        </td>
+        <td>
+          <a href="{% url 'vehicle_edit' vehicle.pk %}" class="mono" style="color:var(--blue);font-size:12px;">Edit</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8" style="text-align:center;color:var(--text-faint);padding:34px;">
+          No vehicles registered yet. <a href="{% url 'vehicle_create' %}" style="color:var(--teal);">Register your first vehicle</a>.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if is_paginated %}
+<div style="display:flex;justify-content:center;gap:10px;margin-top:18px;font-size:12.5px;">
+  {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" style="color:var(--text-muted);">&larr; Prev</a>{% endif %}
+  <span class="mono" style="color:var(--text-faint);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" style="color:var(--text-muted);">Next &rarr;</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends 'core_app/base.html' %}
+{% load static %}
+
+{% block title %}Operations Room{% endblock %}
+
+{% block page_title %}System Overview{% endblock %}
+{% block page_sub %}Real-time terminal fleet telemetry and metrics.{% endblock %}
+
+{% block topbar_extra %}
+<!-- Search & Quick Action Toolbar -->
+<div class="search-wrap">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+  <input type="text" placeholder="Search operational units...">
+</div>
+<button class="icon-btn" title="System Alerts">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+</button>
+{% endblock %}
+
+{% block content %}
+<!-- 7-Card Core KPI Strip -->
+<div class="kpi-strip">
+  <div class="kpi-card accent">
+    <div class="label">ACTIVE FLEET UNITS</div>
+    <div class="val">42<small>/45</small></div>
+    <div class="trend up">▲ 93.3% online</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">OPERATIONAL EFFICIENCY</div>
+    <div class="val">94.2%</div>
+    <div class="trend up">▲ 1.2% vs yesterday</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">ACTIVE TRIPS RUNNING</div>
+    <div class="val">18</div>
+    <div class="trend state">In transit</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">PENDING ALERTS</div>
+    <div class="val" style="color: var(--amber);">3</div>
+    <div class="trend down">▼ 2 resolved</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">CRITICAL FAILURES</div>
+    <div class="val" style="color: var(--coral);">0</div>
+    <div class="trend ok">All systems clear</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">FUEL CONSUMPTION</div>
+    <div class="val">312<small>L/h</small></div>
+    <div class="trend down">▼ 4% optimization</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">MAINTENANCE QUEUE</div>
+    <div class="val">4</div>
+    <div class="trend state">Units scheduled</div>
+  </div>
+</div>
+
+<!-- Main Analytical Grid Split -->
+<div class="grid-main">
+  <!-- Chart Metrics Left Panel -->
+  <div class="panel">
+    <div class="panel-head">
+      <h3>FLEET UTILIZATION TREND</h3>
+      <span class="tag">LOG_STREAM_7D</span>
+    </div>
+    <!-- Chart Container (script.js will target this ID) -->
+    <div style="height: 280px; position: relative;">
+      <canvas id="utilChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Operational Cost Split Right Panel -->
+  <div class="panel">
+    <div class="panel-head">
+      <h3>EXPENSE DISTRIBUTION</h3>
+      <span class="tag">REALTIME_COSTS</span>
+    </div>
+    <div style="height: 200px; position: relative;">
+      <canvas id="costChart"></canvas>
+    </div>
+    <div class="legend-row">
+      <div class="legend-item"><span class="legend-dot" style="background: var(--teal);"></span> Fuel</div>
+      <div class="legend-item"><span class="legend-dot" style="background: var(--blue);"></span> Maintenance</div>
+      <div class="legend-item"><span class="legend-dot" style="background: var(--amber);"></span> Tolls &amp; Other</div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Pulls in the core app script handling data visual initialization -->
+<script src="{% static 'js/script.js' %}"></script>
+{% endblock %}

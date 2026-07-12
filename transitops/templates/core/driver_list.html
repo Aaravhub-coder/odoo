@@ -1,0 +1,85 @@
+{% extends 'core/base.html' %}
+{% block title %}Drivers{% endblock %}
+{% block page_title %}Driver Management{% endblock %}
+{% block page_sub %}{{ drivers|length }} drivers on roster{% endblock %}
+
+{% block topbar_extra %}
+<a href="{% url 'driver_create' %}" class="export-btn">+ Add Driver</a>
+{% endblock %}
+
+{% block content %}
+<form method="get" class="filter-bar">
+  <input type="text" name="q" placeholder="Search by name or license number…" value="{{ request.GET.q }}">
+  <select name="status" onchange="this.form.submit()">
+    <option value="">All statuses</option>
+    <option value="available" {% if request.GET.status == 'available' %}selected{% endif %}>Available</option>
+    <option value="on_trip" {% if request.GET.status == 'on_trip' %}selected{% endif %}>On Trip</option>
+    <option value="off_duty" {% if request.GET.status == 'off_duty' %}selected{% endif %}>Off Duty</option>
+    <option value="suspended" {% if request.GET.status == 'suspended' %}selected{% endif %}>Suspended</option>
+  </select>
+</form>
+
+<div class="panel">
+  <table>
+    <thead>
+      <tr>
+        <th>Driver</th>
+        <th>License #</th>
+        <th>Category</th>
+        <th>Expiry</th>
+        <th>Safety Score</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for driver in drivers %}
+      <tr>
+        <td>
+          {{ driver.name }}
+          {% if driver.is_license_expired %}
+            <div class="veh-sub" style="color:var(--coral);">License expired</div>
+          {% endif %}
+        </td>
+        <td class="mono">{{ driver.license_number }}</td>
+        <td>{{ driver.license_category }}</td>
+        <td class="mono">{{ driver.license_expiry|date:"Y-m-d" }}</td>
+        <td>
+          <span class="progress-bar">
+            <span class="progress-fill" style="width:{{ driver.safety_score }}%;background:{% if driver.safety_score < 70 %}var(--amber){% else %}var(--teal){% endif %};"></span>
+          </span>{{ driver.safety_score }}
+        </td>
+        <td>
+          {% if driver.status == 'available' %}
+            <span class="badge ok">Available</span>
+          {% elif driver.status == 'on_trip' %}
+            <span class="badge info">On Trip</span>
+          {% elif driver.status == 'off_duty' %}
+            <span class="badge neutral">Off Duty</span>
+          {% else %}
+            <span class="badge danger">Suspended</span>
+          {% endif %}
+        </td>
+        <td>
+          <a href="{% url 'driver_edit' driver.pk %}" class="mono" style="color:var(--blue);font-size:12px;">Edit</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" style="text-align:center;color:var(--text-faint);padding:34px;">
+          No drivers on file yet. <a href="{% url 'driver_create' %}" style="color:var(--teal);">Add your first driver</a>.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if is_paginated %}
+<div style="display:flex;justify-content:center;gap:10px;margin-top:18px;font-size:12.5px;">
+  {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" style="color:var(--text-muted);">&larr; Prev</a>{% endif %}
+  <span class="mono" style="color:var(--text-faint);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" style="color:var(--text-muted);">Next &rarr;</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

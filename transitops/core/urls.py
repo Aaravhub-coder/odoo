@@ -29,4 +29,16 @@ urlpatterns = [
     path('maintenance/<int:pk>/close/', views.CloseMaintenanceView.as_view(), name='maintenance_close'),
     path('fuel/add/', views.FuelLogCreateView.as_view(), name='fuel_create'),
     path('expenses/add/', views.ExpenseCreateView.as_view(), name='expense_create'),
+    # Dashboard Home
+    path('dashboard/', views.dashboard, name='dashboard'),
+    
+    # Driver Views
+    path('drivers/', views.driver_list_view, name='driver_list'),
+    path('drivers/create/', views.driver_create_view, name='driver_create'),
+    path('drivers/<int:pk>/edit/', views.driver_edit_view, name='driver_edit'),
+    
+    # Vehicle Views
+    path('vehicles/', views.vehicle_list_view, name='vehicle_list'),
+    path('vehicles/create/', views.vehicle_create_view, name='vehicle_create'),
+    path('vehicles/<int:pk>/edit/', views.vehicle_edit_view, name='vehicle_edit'),
 ]
